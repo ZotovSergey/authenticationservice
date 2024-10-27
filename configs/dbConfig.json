@@ -1,0 +1,9 @@
+{
+    "databaseDumpPath":     "../../databaseDumps/db.json",
+    "defaultAdminProfile":  {
+        "login":        "admin",
+        "firstName":    "admin",
+        "lastName":     "admin",
+        "password":     "admin"
+    }
+}
