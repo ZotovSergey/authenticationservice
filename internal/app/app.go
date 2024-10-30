@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/ZotovSergey/authenticationservice/internal/database/myProfilesDB"
-	"github.com/ZotovSergey/authenticationservice/internal/services/rest/httprouter"
+	"github.com/ZotovSergey/authenticationservice/internal/rest/httprouter"
 	// "github.com/ZotovSergey/authenticationservice/internal/models"
 )
 

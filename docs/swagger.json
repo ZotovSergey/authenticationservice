@@ -1,0 +1,369 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Сервис для хранения информации о пользователях. Каждый зарегистрированный пользователь может авторизоваться по своим логину и паролю и просматривать и менять информацию о себе и только просматривать информацию о других пользователях. Пользователи-администраторы могут создавать, изменять и удалять профили.",
+        "title": "Authentication service",
+        "contact": {}
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "paths": {
+        "/admin": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на добавление администратора, доступно только администраторам",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Add admin",
+                "parameters": [
+                    {
+                        "description": "логин профиля, добавляемого к списку администраторов",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на удаление профиля из списка администраторов администратора, доступно только администраторам, нельзя удалять из списка администраторов свой профиль",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Drop admin",
+                "parameters": [
+                    {
+                        "description": "логин профиля, удаляемого из списка администраторов",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/logins": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на вывод списка логинов всех профилей, доступно всем пользователям",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all logins",
+                "responses": {
+                    "200": {
+                        "description": "logins",
+                        "schema": {
+                            "type": "json"
+                        }
+                    }
+                }
+            }
+        },
+        "/password": {
+            "patch": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на изменение пароля пользователя, доступно всем пользователям при редактировании своих профилей и доступно редактирование всех профилей администраторам",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Change password",
+                "parameters": [
+                    {
+                        "description": "логин профиля, для каторого меняется пароль и новый пароль",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.NewPasswordForProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на вывод данных о профиле по логину, доступно всем пользователям (запрос не работает со страницы swagger из браузера, но работает через postman или insomnia)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get profile data",
+                "parameters": [
+                    {
+                        "description": "логин получаемого профиля",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "json"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на регистрацию нового пользователя, доступно только администраторам",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Add profile",
+                "parameters": [
+                    {
+                        "description": "данные нового профиля, включающие логин нового профиля, данные для хранения и пароль",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FullProfileData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос удаление профиля, доступно только администраторам, нельзя удалять свой профиль",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Remove profile",
+                "parameters": [
+                    {
+                        "description": "логин удаляемого профиля",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Запрос на редактирование данных профиля, доступно всем пользователям при редактировании своих профилей и доступно редактирование всех профилей администраторам",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Edit profile",
+                "parameters": [
+                    {
+                        "description": "логин редактируемого профиля и новые данные для редактирования (если данные не добавлениы, то они не меняются)",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfileData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "request completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "no such profile",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.FullProfileData": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "description": "имя пользователя",
+                    "type": "string"
+                },
+                "lastName": {
+                    "description": "фамилия пользователя",
+                    "type": "string"
+                },
+                "login": {
+                    "description": "логин профиля, используется при авторизации, является первичным ключом для БД, должен быть уникальным",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "пароль для входа нового пользователя (должен быть не длиннее 72 символов)",
+                    "type": "string"
+                }
+            }
+        },
+        "models.LoginData": {
+            "type": "object",
+            "properties": {
+                "login": {
+                    "description": "логин профиля, используется при авторизации, является первичным ключом для БД, должен быть уникальным",
+                    "type": "string"
+                }
+            }
+        },
+        "models.NewPasswordForProfile": {
+            "type": "object",
+            "properties": {
+                "login": {
+                    "description": "логин профиля, используется при авторизации, является первичным ключом для БД, должен быть уникальным",
+                    "type": "string"
+                },
+                "newPassword": {
+                    "description": "новый пароль для входа пользователя (должен быть не длиннее 72 символов)",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProfileData": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "description": "имя пользователя",
+                    "type": "string"
+                },
+                "lastName": {
+                    "description": "фамилия пользователя",
+                    "type": "string"
+                },
+                "login": {
+                    "description": "логин профиля, используется при авторизации, является первичным ключом для БД, должен быть уникальным",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    }
+}

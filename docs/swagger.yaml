@@ -1,0 +1,253 @@
+basePath: /
+definitions:
+  models.FullProfileData:
+    properties:
+      firstName:
+        description: имя пользователя
+        type: string
+      lastName:
+        description: фамилия пользователя
+        type: string
+      login:
+        description: логин профиля, используется при авторизации, является первичным
+          ключом для БД, должен быть уникальным
+        type: string
+      password:
+        description: пароль для входа нового пользователя (должен быть не длиннее
+          72 символов)
+        type: string
+    type: object
+  models.LoginData:
+    properties:
+      login:
+        description: логин профиля, используется при авторизации, является первичным
+          ключом для БД, должен быть уникальным
+        type: string
+    type: object
+  models.NewPasswordForProfile:
+    properties:
+      login:
+        description: логин профиля, используется при авторизации, является первичным
+          ключом для БД, должен быть уникальным
+        type: string
+      newPassword:
+        description: новый пароль для входа пользователя (должен быть не длиннее 72
+          символов)
+        type: string
+    type: object
+  models.ProfileData:
+    properties:
+      firstName:
+        description: имя пользователя
+        type: string
+      lastName:
+        description: фамилия пользователя
+        type: string
+      login:
+        description: логин профиля, используется при авторизации, является первичным
+          ключом для БД, должен быть уникальным
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Сервис для хранения информации о пользователях. Каждый зарегистрированный
+    пользователь может авторизоваться по своим логину и паролю и просматривать и менять
+    информацию о себе и только просматривать информацию о других пользователях. Пользователи-администраторы
+    могут создавать, изменять и удалять профили.
+  title: Authentication service
+paths:
+  /admin:
+    delete:
+      consumes:
+      - application/json
+      description: Запрос на удаление профиля из списка администраторов администратора,
+        доступно только администраторам, нельзя удалять из списка администраторов
+        свой профиль
+      parameters:
+      - description: логин профиля, удаляемого из списка администраторов
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginData'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Drop admin
+    post:
+      consumes:
+      - application/json
+      description: Запрос на добавление администратора, доступно только администраторам
+      parameters:
+      - description: логин профиля, добавляемого к списку администраторов
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginData'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Add admin
+  /logins:
+    get:
+      description: Запрос на вывод списка логинов всех профилей, доступно всем пользователям
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: logins
+          schema:
+            type: json
+      security:
+      - BasicAuth: []
+      summary: Get all logins
+  /password:
+    patch:
+      consumes:
+      - application/json
+      description: Запрос на изменение пароля пользователя, доступно всем пользователям
+        при редактировании своих профилей и доступно редактирование всех профилей
+        администраторам
+      parameters:
+      - description: логин профиля, для каторого меняется пароль и новый пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewPasswordForProfile'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Change password
+  /profile:
+    delete:
+      consumes:
+      - application/json
+      description: Запрос удаление профиля, доступно только администраторам, нельзя
+        удалять свой профиль
+      parameters:
+      - description: логин удаляемого профиля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginData'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Remove profile
+    get:
+      consumes:
+      - application/json
+      description: Запрос на вывод данных о профиле по логину, доступно всем пользователям
+        (запрос не работает со страницы swagger из браузера, но работает через postman
+        или insomnia)
+      parameters:
+      - description: логин получаемого профиля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: json
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Get profile data
+    patch:
+      consumes:
+      - application/json
+      description: Запрос на редактирование данных профиля, доступно всем пользователям
+        при редактировании своих профилей и доступно редактирование всех профилей
+        администраторам
+      parameters:
+      - description: логин редактируемого профиля и новые данные для редактирования
+          (если данные не добавлениы, то они не меняются)
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfileData'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Edit profile
+    post:
+      consumes:
+      - application/json
+      description: Запрос на регистрацию нового пользователя, доступно только администраторам
+      parameters:
+      - description: данные нового профиля, включающие логин нового профиля, данные
+          для хранения и пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.FullProfileData'
+      responses:
+        "200":
+          description: request completed
+          schema:
+            type: string
+        "404":
+          description: no such profile
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: Add profile
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
