@@ -16,17 +16,17 @@ var DB *myProfilesDB
 
 // Структура in memory базы данных профилей
 type myProfilesDB struct {
-	profilesDataTab      map[string]models.ProfileData     // таблица данных профиля
-	profilesPasswordsTab map[string]models.ProfilePassword // таблица зашифрованных паролей хэш+соль паролей профилей - используется для безопасного хранения паролей в зашифрованном виде)
-	adminsTab            map[string]struct{}               // таблица админов сервиса
-	dumpFilePath         string                            // путь к файлу с данными из базы на диске (из него данные для заполнения читаются и в него сохраняются)
+	profilesDataTab      map[string]models.ProfileData // таблица данных профиля
+	profilesPasswordsTab map[string]string             // таблица зашифрованных паролей хэш+соль паролей профилей - используется для безопасного хранения паролей в зашифрованном виде)
+	adminsTab            map[string]struct{}           // таблица админов сервиса
+	dumpFilePath         string                        // путь к файлу с данными из базы на диске (из него данные для заполнения читаются и в него сохраняются)
 }
 
 // Структура базы данных профилей в файле (для хранения данных в файле)
 type myProfilesDBFileData struct {
-	ProfilesDataTab      map[string]models.ProfileData     `json:"profilesDataTab"`      // таблица данных профиля
-	ProfilesPasswordsTab map[string]models.ProfilePassword `json:"profilesPasswordsTab"` // таблица зашифрованных паролей хэш+соль паролей профилей - используется для безопасного хранения паролей в зашифрованном виде)
-	AdminsTab            []string                          `json:"adminsTab"`            // таблица админов сервиса
+	ProfilesDataTab      map[string]models.ProfileData `json:"profilesDataTab"`      // таблица данных профиля
+	ProfilesPasswordsTab map[string]string             `json:"profilesPasswordsTab"` // таблица зашифрованных паролей хэш+соль паролей профилей - используется для безопасного хранения паролей в зашифрованном виде)
+	AdminsTab            []string                      `json:"adminsTab"`            // таблица админов сервиса
 }
 
 /*
@@ -74,7 +74,7 @@ func RaiseMyProfilesDB() error {
 	case errors.Is(err, os.ErrNotExist):
 		db = myProfilesDB{
 			profilesDataTab:      make(map[string]models.ProfileData),
-			profilesPasswordsTab: make(map[string]models.ProfilePassword),
+			profilesPasswordsTab: make(map[string]string),
 			adminsTab:            make(map[string]struct{}),
 			dumpFilePath:         dataFilePath,
 		}
@@ -124,7 +124,7 @@ func (db *myProfilesDB) Dump() error {
 
 :param login string: логин получаемого профиля
 
-:return: данные о профиле с логином login
+:return: данные о профиле с логином login или ошибка, исли профиля с таким логином нет
 */
 func (db *myProfilesDB) GetProfileData(login string) (profileData models.ProfileData, err error) {
 	// Поиск данных профиля
@@ -148,6 +148,31 @@ func (db *myProfilesDB) GetAllLogins() (logins []string) {
 }
 
 /*
+Получение зашифрованного пароля профиля по логину
+
+:param login string: логин профиля, для которого берется зашифрованный пароль
+
+:return: зашифрованный пароль профиля с логином login или ошибка, исли профиля с таким логином нет
+*/
+func (db *myProfilesDB) GetPasswordHashSalt(login string) (passwordHashSalt string, err error) {
+	// Поиск пароля
+	passwordHashSalt, ok := db.profilesPasswordsTab[login]
+	if !ok {
+		err = noProfileErr
+	}
+	return
+}
+
+/*
+Получение таблицы логинов и паролей (для авторизаторов)
+
+:return: map db.profilesPasswordsTab
+*/
+func (db *myProfilesDB) GetPasswordsTab() map[string]string {
+	return db.profilesPasswordsTab
+}
+
+/*
 Проверка профиля, входит ли он в список администраторов
 
 :param login string: логин профиля, проверяемого по списку администраторов
@@ -161,7 +186,7 @@ func (db *myProfilesDB) IsAdmin(login string) bool {
 }
 
 /*
-Добавление профиля пользователя, данных профиля, пароля (в зашифрованном виде)
+Запись данных и пароля (в зашифрованном виде) нового пользователя (регистрация)
 
 :param login string: логин нового профиля
 :param profileData models.ProfileData: данные для хранения в новом профиле
@@ -185,7 +210,7 @@ func (db *myProfilesDB) AddProfile(login string, profileData models.ProfileData,
 	if err != nil {
 		return incorrectPasswordErr
 	}
-	db.profilesPasswordsTab[login] = models.ProfilePassword{PasswordHashSalt: string(passwordHashSalt)}
+	db.profilesPasswordsTab[login] = string(passwordHashSalt)
 
 	// Сохранение данных в файл
 	err = db.Dump()
@@ -242,7 +267,7 @@ func (db *myProfilesDB) ChangePassword(login string, newPassword string) error {
 	if err != nil {
 		return incorrectPasswordErr
 	}
-	db.profilesPasswordsTab[login] = models.ProfilePassword{PasswordHashSalt: string(newPasswordHashSalt)}
+	db.profilesPasswordsTab[login] = string(newPasswordHashSalt)
 
 	// Сохранение данных в файл
 	err = db.Dump()
@@ -282,7 +307,7 @@ func (db *myProfilesDB) RemoveProfile(login string) error {
 }
 
 /*
-Добавление профиля в список админов
+Добавление логина профиля в список админов
 
 :param login string: логин добавляемого администратора
 
@@ -307,7 +332,7 @@ func (db *myProfilesDB) AddAdmin(login string) error {
 }
 
 /*
-Удаление профиля из списка админов
+Удаление логина профиля из списка админов
 
 :param login string: логин профиля, удаляемого из списка администраторов
 
